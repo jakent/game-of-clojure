@@ -3,10 +3,10 @@
             [game-of-clojure.core :as core]))
 
 (deftest alive-cell-transformations
-  (is (= :dead (core/transform :alive 1)))
-  (is (= :alive (core/transform :alive 2)))
-  (is (= :alive (core/transform :alive 3)))
-  (is (= :dead (core/transform :alive 4))))
+  (is (= :dead (core/transform true 1)))
+  (is (= :alive (core/transform true 2)))
+  (is (= :alive (core/transform true 3)))
+  (is (= :dead (core/transform true 4))))
 
 (deftest dead-cell-transformations
   (is (= :dead (core/transform false 1)))
@@ -22,7 +22,8 @@
 
 (deftest no-movement
   (is (= #{} (core/tick #{})))
+  (is (= core/boat (core/tick core/boat)))
   (is (= #{[0 0] [0 1] [1 0] [1 1]} (core/tick #{[0 0] [0 1] [1 0] [1 1]}))))
 
 (deftest some-movement
-  (is (= #{[0 0]} (core/tick #{[1 1] [1 0] [0 1]}))))
+  (is (= #{[0 0] [1 0] [1 1] [0 1]} (core/tick #{[1 1] [1 0] [0 1]}))))
