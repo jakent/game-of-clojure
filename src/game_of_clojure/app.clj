@@ -14,7 +14,7 @@
       (if (= (inc x) width)
         (println))))
 
-  (Thread/sleep 500))
+  (Thread/sleep 50))
 
 (defn draw [life-seq width height]
   (map (partial print-grid width height) life-seq))
