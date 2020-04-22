@@ -3,6 +3,18 @@
             [reagent.dom :as rdom]
             [game-of-clojure.core :as core]))
 
+
+(def origin (r/atom [-1 -1]))
+
+(defn on-key-down [event]
+  (swap! origin (fn [[x y]]
+                  (case (.-keyCode event)
+                    39 [(inc x) y]
+                    37 [(dec x) y]
+                    38 [x (dec y)]
+                    40 [x (inc y)]
+                    [x y]))))
+
 (defn calculate-count [dimension]
   (-> dimension (/ 30) int dec))
 
@@ -12,13 +24,16 @@
 
 (def dimensions (r/atom (discover-dimensions)))
 
-(defn on-resize [_]
+(defn on-resize [e]
   (reset! dimensions (discover-dimensions)))
 
 (defonce living (r/atom core/r-pentomino))
 
 (defonce life (js/setInterval
-                #(swap! living core/tick) 500))
+                #(swap! living core/tick) 50))
+
+(defn calculate-range [offset count]
+  (range offset (+ count offset)))
 
 (defn cell [{:keys [alive]}]
   [:div {:style {:height          30
@@ -30,16 +45,18 @@
 (defn row [{:keys [y living]}]
   [:div {:style {:display "flex"}}
    (map (fn [x] [cell {:key x :alive (contains? living [x y])}])
-        (range (:x-count @dimensions)))])
+        (calculate-range (first @origin) (:x-count @dimensions)))])
 
 (defn grid []
   [:div {:style {:display       "flex"
-                 :flexDirection "column"}}
-   (let [living  @living]
+                 :flexDirection "column"
+                 :overflow      "hidden"}}
+   (let [living @living]
      (map (fn [y] [row {:key y :y y :living living}])
-          (range (:y-count @dimensions))))])
+          (calculate-range (second @origin) (:y-count @dimensions))))])
 
 (defn ^:export run []
   (rdom/render [grid]
                (.getElementById js/document "app"))
-  (.addEventListener js/window "resize" on-resize))
+  (.addEventListener js/window "resize" on-resize)
+  (.addEventListener js/document "keydown" on-key-down))
